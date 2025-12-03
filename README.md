@@ -281,6 +281,53 @@ The root config files (`eslint.config.mjs`, `vitest.config.ts`) re-export from t
 
 ---
 
+## Tech Stack
+
+### Frontend
+
+- **Next.js 16**
+- **Tailwind CSS 4**
+- **HeroUI**
+- **Framer Motion**
+- **Zustand** – Not sure if I want to keep it, currently mostly unused in favor of the context API.
+- **TanStack Query**
+
+### Backend
+
+- **Node.js** - Custom server that embeds the Next server for WS/Cron support.
+- **tRPC**
+- **Better Auth**
+- **Pino**
+- **node-cron**
+
+### Database
+
+- **PostgreSQL** 
+- **Drizzle ORM**
+
+### AI & Processing
+
+- **OpenAI SDK**
+- **Puppeteer** – Headless browser for web scraping, optional if not configured uses the built in fetch method.
+- **yt-dlp** – Video downloading from YouTube, TikTok, etc.
+- **Sharp** – To process the images to a uniform format.
+- **FFmpeg**
+
+### Testing
+
+- **Vitest**
+- **Testing Library**
+- **jsdom**
+
+### Tooling
+
+- **TypeScript 5**
+- **pnpm**
+- **ESLint**
+- **Prettier**
+
+---
+
 ## License
 
 Norish is licensed under [AGPL-3.0](LICENSE).
