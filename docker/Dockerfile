@@ -1,7 +1,8 @@
 ##############################
 # Base image (minimal, no pnpm needed at runtime)
 ##############################
-FROM node:25-alpine AS base
+FROM node:25-alpine@sha256:26ded7f450a0ad37241d2ae97ea521a59cb551a1785c8a950f74b0a291ad3aea AS base
+
 
 RUN apk add --no-cache ca-certificates libc6-compat
 
