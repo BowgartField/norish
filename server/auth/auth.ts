@@ -6,6 +6,9 @@ import { nextCookies } from "better-auth/next-js";
 import { apiKey, genericOAuth } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import { credentials } from "better-auth-credentials-plugin";
+import { authenticate } from "ldap-authentication";
+import { z } from "zod";
 
 import {
   getCachedGitHubProvider,
@@ -139,6 +142,63 @@ function buildEmailAndPasswordConfig() {
     minPasswordLength: 8,
     maxPasswordLength: 128,
   };
+}
+
+// Check if LDAP is configured
+function isLdapEnabled() {
+  return !!(SERVER_CONFIG.LDAP_URL && SERVER_CONFIG.LDAP_BASE_DN);
+}
+
+// Build LDAP credentials plugin
+function buildLdapPlugin() {
+  if (!isLdapEnabled()) {
+    return null;
+  }
+
+  return credentials({
+    autoSignUp: true,
+    linkAccountIfExisting: true,
+    providerId: "ldap",
+    inputSchema: z.object({
+      credential: z.string().min(1),
+      password: z.string().min(1),
+    }),
+    async callback(_ctx, parsed) {
+      try {
+        const ldapResult = await authenticate({
+          ldapOpts: {
+            url: SERVER_CONFIG.LDAP_URL!,
+            connectTimeout: 5000,
+          },
+          adminDn: SERVER_CONFIG.LDAP_BIND_DN,
+          adminPassword: SERVER_CONFIG.LDAP_BIND_PASSWORD,
+          userSearchBase: SERVER_CONFIG.LDAP_BASE_DN!,
+          usernameAttribute: SERVER_CONFIG.LDAP_USERNAME_ATTR,
+          username: parsed.credential,
+          userPassword: parsed.password,
+        });
+
+        const email =
+          ldapResult.mail ||
+          ldapResult.email ||
+          `${ldapResult[SERVER_CONFIG.LDAP_USERNAME_ATTR] || parsed.credential}@ldap.local`;
+        const name =
+          ldapResult.displayName || ldapResult.cn || ldapResult[SERVER_CONFIG.LDAP_USERNAME_ATTR];
+
+        authLogger.info({ username: parsed.credential }, "LDAP authentication successful");
+
+        return {
+          email,
+          name,
+        };
+      } catch (error) {
+        authLogger.warn({ username: parsed.credential, error }, "LDAP authentication failed");
+        throw new APIError("UNAUTHORIZED", {
+          message: "Invalid LDAP credentials",
+        });
+      }
+    },
+  });
 }
 
 // Lazy-initialized auth instance
@@ -303,6 +363,9 @@ function createAuth() {
       }),
 
       nextCookies(),
+
+      // LDAP authentication (conditionally enabled)
+      ...(buildLdapPlugin() ? [buildLdapPlugin()!] : []),
     ],
 
     hooks: {
