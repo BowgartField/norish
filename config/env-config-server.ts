@@ -91,6 +91,7 @@ const ServerConfigSchema = z.object({
   LDAP_BIND_PASSWORD: z.string().optional(),
   LDAP_BASE_DN: z.string().optional(), // e.g., ou=users,dc=example,dc=org
   LDAP_USERNAME_ATTR: z.string().default("uid"),
+  LDAP_SEARCH_FILTER: z.string().optional(), // e.g., (objectclass=posixAccount)
 
   // During build (SKIP_ENV_VALIDATION=1), use a placeholder key for Next.js compilation
   // At runtime, require a real 32+ char key - the placeholder is never persisted in the image
