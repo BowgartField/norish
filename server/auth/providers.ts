@@ -7,7 +7,7 @@ import {
   type AuthProviderGitHub,
   type AuthProviderGoogle,
 } from "@/server/db/zodSchemas/server-config";
-import { SERVER_CONFIG } from "@/config/env-config-server";
+import { isLdapEnabled } from "@/server/auth/ldap-plugin";
 
 export async function getAvailableProviders(): Promise<ProviderInfo[]> {
   const providers: ProviderInfo[] = [];
@@ -61,7 +61,7 @@ export async function getAvailableProviders(): Promise<ProviderInfo[]> {
   }
 
   // Check LDAP provider (configured via env vars)
-  if (SERVER_CONFIG.LDAP_URL && SERVER_CONFIG.LDAP_BASE_DN) {
+  if (isLdapEnabled()) {
     providers.push({
       id: "ldap",
       name: "LDAP",
@@ -79,9 +79,8 @@ export async function isPasswordAuthEnabled(): Promise<boolean> {
   return passwordEnabled ?? false;
 }
 
-export function isLdapEnabled(): boolean {
-  return !!(SERVER_CONFIG.LDAP_URL && SERVER_CONFIG.LDAP_BASE_DN);
-}
+// Re-export from ldap-plugin for convenience
+export { isLdapEnabled } from "@/server/auth/ldap-plugin";
 
 export async function getConfiguredProviders(): Promise<Record<string, boolean>> {
   const [github, google, oidc, passwordEnabled] = await Promise.all([

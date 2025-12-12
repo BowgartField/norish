@@ -22,13 +22,13 @@ export function LdapForm({ callbackUrl = "/" }: LdapFormProps) {
     setError(null);
 
     try {
-      const response = await fetch("/api/auth/sign-in/credentials", {
+      const response = await fetch("/api/auth/sign-in/ldap", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          credential: username,
+          username,
           password,
         }),
         credentials: "include",
