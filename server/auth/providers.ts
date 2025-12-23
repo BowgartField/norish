@@ -12,16 +12,18 @@ import { isLdapEnabled } from "@/server/auth/ldap-plugin";
 export async function getAvailableProviders(): Promise<ProviderInfo[]> {
   const providers: ProviderInfo[] = [];
 
-  // Check password auth
-  const passwordEnabled = await getConfig<boolean>(ServerConfigKeys.PASSWORD_AUTH_ENABLED);
+  // Check password auth (disabled when LDAP is enabled)
+  if (!isLdapEnabled()) {
+    const passwordEnabled = await getConfig<boolean>(ServerConfigKeys.PASSWORD_AUTH_ENABLED);
 
-  if (passwordEnabled) {
-    providers.push({
-      id: "credential",
-      name: "Email",
-      icon: "mdi:email-outline",
-      type: "credential",
-    });
+    if (passwordEnabled) {
+      providers.push({
+        id: "credential",
+        name: "Email",
+        icon: "mdi:email-outline",
+        type: "credential",
+      });
+    }
   }
 
   // Check GitHub provider
